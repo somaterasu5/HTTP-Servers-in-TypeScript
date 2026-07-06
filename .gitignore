@@ -1,0 +1,42 @@
+# Dependency directories
+# (node_modules for Node.js, venv for Python, vendor for PHP/Go)
+/node_modules
+/jspm_packages
+/vendor
+/venv
+/env
+/ENV
+.env
+.env.local
+.env.*.local
+
+# Build outputs & Logs
+/dist
+/build
+/out
+/target
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS & Editor configurations
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+*.swo
+.project
+.classpath
+.settings/
+
+# Databases & Cache
+*.sqlite
+*.sqlite3
+*.db
+.cache/
+.eslintcache
