@@ -1,3 +1,13 @@
+process.loadEnvFile();
+
+function envOrThrow(key: string): string {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+  return value;
+}
+
 type APIConfig = {
   fileserverHits: number;
   dbURL: string;
@@ -5,7 +15,7 @@ type APIConfig = {
 
 const config: APIConfig = {
   fileserverHits: 0,
-  dbURL: 
+  dbURL: envOrThrow("DB_URL"),
 };
 
-export default config
+export default config;
