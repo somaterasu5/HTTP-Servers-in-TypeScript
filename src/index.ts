@@ -1,11 +1,17 @@
 import express from "express";
 import { Request, Response, NextFunction } from "express";
 import config from "./config.js";
+import postgres from "postgres";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { drizzle } from "drizzle-orm/postgres-js";
 
 const app = express();
-const PORT = 8080;
+const PORT = config.api.port;
 
 app.use(express.json());
+
+const migrationClient = postgres(config.db.url, { max: 1 });
+await migrate(drizzle(migrationClient), config.db.migrationConfig);
 
 class NotFoundError extends Error {
   constructor(message: string) {
@@ -51,7 +57,7 @@ const middlewareMetricsInc = (
   res: Response,
   next: NextFunction,
 ) => {
-  config.fileserverHits += 1;
+  config.api.fileserverHits += 1;
   next();
 };
 
@@ -76,13 +82,13 @@ const handleServerMetrics = async (req: Request, res: Response) => {
   res.send(`<html>
   <body>
     <h1>Welcome, Chirpy Admin</h1>
-    <p>Chirpy has been visited ${config.fileserverHits} times!</p>
+    <p>Chirpy has been visited ${config.api.fileserverHits} times!</p>
   </body>
 </html>`);
 };
 
 const handleResetServerMetrics = async (req: Request, res: Response) => {
-  config.fileserverHits = 0;
+  config.api.fileserverHits = 0;
 
   res.send("Metrics Reset.");
 };

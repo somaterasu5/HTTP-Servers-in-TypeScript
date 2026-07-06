@@ -10,12 +10,30 @@ function envOrThrow(key: string): string {
 
 type APIConfig = {
   fileserverHits: number;
-  dbURL: string;
+  port: number;
 };
 
-const config: APIConfig = {
-  fileserverHits: 0,
-  dbURL: envOrThrow("DB_URL"),
+type DBConfig = {
+  url: string;
+  migrationConfig: {
+    migrationsFolder: string;
+  };
+};
+
+type Config = {
+  db: DBConfig;
+  api: APIConfig;
+};
+
+const config: Config = {
+  api: {
+    fileserverHits: 0,
+    port: 8080,
+  },
+  db: {
+    url: envOrThrow("DB_URL"),
+    migrationConfig: { migrationsFolder: "./src/db/migrations" },
+  },
 };
 
 export default config;
