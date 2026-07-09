@@ -4,6 +4,11 @@ import config from "./config.js";
 import postgres from "postgres";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { drizzle } from "drizzle-orm/postgres-js";
+import {
+  clearUserRecords,
+  createUser,
+  getUserByEmail,
+} from "./db/queries/users.js";
 
 const app = express();
 const PORT = config.api.port;
@@ -88,7 +93,12 @@ const handleServerMetrics = async (req: Request, res: Response) => {
 };
 
 const handleResetServerMetrics = async (req: Request, res: Response) => {
+  if (config.api.platform !== "dev") {
+    throw new ForbiddenError("Cannot perform the action");
+  }
   config.api.fileserverHits = 0;
+
+  await clearUserRecords();
 
   res.send("Metrics Reset.");
 };
@@ -119,6 +129,32 @@ const handleValidateChirp = async (req: Request, res: Response) => {
   });
 };
 
+const handleUsers = async (req: Request, res: Response) => {
+  const email = req.body?.email;
+
+  if (!email || typeof email !== "string") {
+    return res.status(400).json({ error: "email is required" });
+  }
+
+  const existingUser = await getUserByEmail(email);
+
+  if (existingUser) {
+    return res.status(409).json({ error: "User already exists" });
+  }
+
+  const user = await createUser({ email });
+
+  return res.status(201).json( user );
+};
+
+const handleAdminReset = async (req: Request, res: Response) => {
+  if (config.api.platform !== "dev") {
+    throw new ForbiddenError("Cannot perform the action");
+  }
+  const clearUsers = await clearUserRecords();
+  return res.status(200);
+};
+
 function errorHandler(
   error: Error,
   req: Request,
@@ -142,6 +178,8 @@ app.get("/admin/metrics", handleServerMetrics);
 app.post("/admin/reset", handleResetServerMetrics);
 
 app.post("/api/validate_chirp", handleValidateChirp);
+
+app.post("/api/users", handleUsers);
 
 app.use(errorHandler);
 

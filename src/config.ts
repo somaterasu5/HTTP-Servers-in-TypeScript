@@ -1,4 +1,4 @@
-process.loadEnvFile();
+import "dotenv/config";
 
 function envOrThrow(key: string): string {
   const value = process.env[key];
@@ -11,6 +11,7 @@ function envOrThrow(key: string): string {
 type APIConfig = {
   fileserverHits: number;
   port: number;
+  platform: string;
 };
 
 type DBConfig = {
@@ -29,6 +30,7 @@ const config: Config = {
   api: {
     fileserverHits: 0,
     port: 8080,
+    platform: envOrThrow("PLATFORM"),
   },
   db: {
     url: envOrThrow("DB_URL"),
