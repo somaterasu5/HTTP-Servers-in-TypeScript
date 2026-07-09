@@ -9,6 +9,7 @@ import {
   createUser,
   getUserByEmail,
 } from "./db/queries/users.js";
+import { createChirp } from "./db/queries/chirps.js";
 
 const app = express();
 const PORT = config.api.port;
@@ -103,8 +104,9 @@ const handleResetServerMetrics = async (req: Request, res: Response) => {
   res.send("Metrics Reset.");
 };
 
-const handleValidateChirp = async (req: Request, res: Response) => {
+const handleCreateChirp = async (req: Request, res: Response) => {
   let chirp = req.body?.body;
+  const user = req.body.userId;
   const profaneWords = ["kerfuffle", "sharbert", "fornax"];
 
   if (chirp.length > 140) {
@@ -124,9 +126,9 @@ const handleValidateChirp = async (req: Request, res: Response) => {
     }
   }
 
-  res.status(200).send({
-    cleanedBody: cleanedChirp.join(" "),
-  });
+  const initiateChirp = await createChirp({ body: chirp, userId: user });
+
+  res.status(201).send(initiateChirp);
 };
 
 const handleUsers = async (req: Request, res: Response) => {
@@ -144,15 +146,7 @@ const handleUsers = async (req: Request, res: Response) => {
 
   const user = await createUser({ email });
 
-  return res.status(201).json( user );
-};
-
-const handleAdminReset = async (req: Request, res: Response) => {
-  if (config.api.platform !== "dev") {
-    throw new ForbiddenError("Cannot perform the action");
-  }
-  const clearUsers = await clearUserRecords();
-  return res.status(200);
+  return res.status(201).json(user);
 };
 
 function errorHandler(
@@ -177,7 +171,7 @@ app.get("/admin/metrics", handleServerMetrics);
 
 app.post("/admin/reset", handleResetServerMetrics);
 
-app.post("/api/validate_chirp", handleValidateChirp);
+app.post("/api/chirps", handleCreateChirp);
 
 app.post("/api/users", handleUsers);
 
